@@ -1,0 +1,1 @@
+docker-compose exec mongodb_container mongosh admin -u root -p password

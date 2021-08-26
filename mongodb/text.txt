@@ -1,0 +1,160 @@
+db.towns.insertOne({
+    name: "New York",
+    population: 22200000,
+    lastCensus: ISODate("2016-07-01"),
+    famousFor: [ "the MOMA", "food", "Derek Jeter" ], mayor : {
+    name : "Bill de Blasio",
+    party : "D" }
+})
+
+
+function insertCity(
+name, population, lastCensus, famousFor, mayorInfo
+){ db.towns.insertOne({
+    name: name,
+    population: population,
+    lastCensus: ISODate(lastCensus),
+    famousFor: famousFor,
+    mayor : mayorInfo
+}); }
+
+db.towns.find({ "_id" : ObjectId("6127165dc0a4addc193c6eb7") })
+db.towns.find({ "_id" : ObjectId("6127165dc0a4addc193c6eb7") }, { name : 1})
+db.towns.find({ "_id" : ObjectId("6127165dc0a4addc193c6eb7") }, { name : 0})
+
+db.towns.find(
+    { name : /^P/, population : { $lt : 10000 } }, 
+    { _id: 0, name : 1, population : 1 }
+)
+
+var population_range = {
+    $lt: 1000000,
+    $gt: 10000
+}
+
+db.towns.find(
+    { name : /^P/, population : population_range },
+    { name: 1 } 
+)
+
+
+db.towns.find(
+    { lastCensus : { $gte : ISODate('2016-06-01') } }, { _id : 0, name: 1 }
+)
+
+db.towns.find(
+    { famousFor : 'food' },
+    { _id : 0, name : 1, famousFor: 1 }
+)
+
+db.towns.find(
+    { famousFor : /MOMA/ },
+    { _id : 0, name : 1, famousFor: 1 }
+)
+
+db.towns.find(
+    { famousFor : { $all : ['food', 'beer'] } },
+    { _id : 0, name:1, famousFor:1}
+)
+
+db.towns.find(
+    { famousFor : { $nin : ['food', 'beer'] } },
+    { _id : 0, name : 1 , famousFor : 1 }
+)
+
+db.towns.find(
+    { 'mayor.party' : 'D' },
+    { _id : 0, name : 1, mayor : 1 }
+)
+
+db.towns.find(
+    { 'mayor.party' : { $exists : false } },
+    { _id : 0, name : 1, mayor : 1 }
+)
+
+db.countries.insertOne({ _id : "us",
+    name : "United States", exports : {
+    foods : [
+    { name : "bacon", tasty : true }, { name : "burgers" }
+    ] }
+})
+
+db.countries.insertOne({
+    _id : "ca",
+    name : "Canada", exports : {
+    foods : [
+    { name : "bacon", tasty : false }, { name : "syrup", tasty : true }
+    ] }
+})
+
+db.countries.insertOne({
+    _id : "mx",
+    name : "Mexico", exports : {
+    foods : [{
+    name : "salsa", tasty : true, condiment : true
+    }] }
+})
+
+db.countries.count()
+
+db.countries.find(
+    { 'exports.foods.name' : 'bacon', 'exports.foods.tasty' : true },
+    { _id : 0, name : 1 }
+)
+
+db.countries.find(
+    {
+        'exports.foods' : {
+            $elemMatch : {
+                name : 'bacon',
+                tasty : true
+            }
+        }
+    },
+    { _id : 0, name : 1 }
+)
+
+db.countries.find(
+    {
+        'exports.foods' : { 
+            $elemMatch : {
+                tasty : true,
+                condiment : { $exists : true } 
+            }
+        } 
+    },
+    { _id : 0, name : 1 }
+)
+
+db.countries.find(
+    {
+        $or : [
+            { _id : "mx" },
+            { name : "United States" }
+        ]
+    },
+    { _id : 1 }
+)
+
+db.towns.updateOne(
+    { _id: ObjectId("6127165dc0a4addc193c6eb7") },
+    { $set : { "state" : "OR" } }
+)
+
+db.towns.findOne({ "_id" : ObjectId("6127165dc0a4addc193c6eb7") })
+
+db.towns.updateOne(
+    { _id: ObjectId("6127165dc0a4addc193c6eb7") },
+    { $inc : { population : 1000 } }
+)
+
+db.towns.updateOne(
+    { _id: ObjectId("6127165dc0a4addc193c6eb7") },
+    { $set: { country : { $ref: "countries", $id: "us" } } }
+)
+
+var portland = db.towns.findOne(
+    { _id : ObjectId("6127165dc0a4addc193c6eb7") }
+);
+
+db.countries.findOne({ _id: portland.country.$id })
